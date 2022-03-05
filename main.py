@@ -11,6 +11,7 @@ import re
 import os
 import random
 import pytz
+import os
 
 from PIL import ImageGrab
 import pyautogui as pag
@@ -25,6 +26,7 @@ self_diagnosis_list = []
 notify_at_8am = []
 
 done = False
+
 
 @client.event
 async def on_guild_join(guild):
@@ -43,9 +45,11 @@ async def on_guild_join(guild):
     except:
         pass
 
+
 @client.event
 async def on_error(event, *args, **kwargs):
-  pass
+    pass
+
 
 @client.event
 async def on_member_join(member):
@@ -75,7 +79,8 @@ async def my_background_task():
     await client.wait_until_ready()
     while True:
         try:
-            await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=f'코냥아 도움말'))
+            await client.change_presence(
+                activity=discord.Activity(type=discord.ActivityType.listening, name=f'코냥아 도움말'))
         except:
             pass
         await asyncio.sleep(5)
@@ -88,10 +93,11 @@ async def my_background_task():
         try:
             await client.change_presence(
                 activity=discord.Activity(type=discord.ActivityType.listening,
-                                          name=f'{len(list(filter(lambda x: not(x.bot), client.users)))}명의 명령어를'))
+                                          name=f'{len(list(filter(lambda x: not (x.bot), client.users)))}명의 명령어를'))
         except:
             pass
         await asyncio.sleep(5)
+
 
 @client.event
 async def self_diagnosis_task():
@@ -99,11 +105,20 @@ async def self_diagnosis_task():
 
     while True:
         if self_diagnosis_list:
-            start = time.time()
-            now = time.localtime()
-            img_time = "%04d-%02d-%02d-%02dh-%02dm-%02ds" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
+            d = datetime.datetime.now()
 
+            if not os.path.exists(f"./2022/{d.month}"):
+                os.makedirs(f"./2022/{d.month}")
+
+            if not os.path.exists(f"./2022/{d.month}/{d.day}"):
+                os.makedirs(f"./2022/{d.month}/{d.day}")
+
+            if not os.path.exists(f"./2022/{d.month}/{d.day}/self_diagnosis"):
+                os.makedirs(f"./2022/{d.month}/{d.day}/self_diagnosis")
+
+            start = time.time()
             data = self_diagnosis_list.pop(0)
+            path = f"./2022/{d.month}/{d.day}/self_diagnosis/{data[2].name}.png"
 
             pag.click((460, 1050))  # 크롬 누르기
             pag.click((957, 394))  # 개신누리 아이디 누르기
@@ -114,7 +129,6 @@ async def self_diagnosis_task():
             await asyncio.sleep(5)
 
             if pag.locateOnScreen('로그인 오류.PNG'):
-
 
                 embed = discord.Embed(title="아이디 혹은 비밀번호가 일치하지 않습니다.",
                                       description=f"**코냥아 설정** 을 통하여 아이디와 비밀번호를 다시 설정해주세요",
@@ -145,25 +159,28 @@ async def self_diagnosis_task():
                     await data[2].send(embed=embed)
                 except:
                     pass
-                pag.click(pag.center(pag.locateOnScreen('okay.PNG')))
+                try:
+                    pag.click(pag.center(pag.locateOnScreen('okay.PNG')))
+                except:
+                    pass
                 pag.hotkey('F5')
-                pag.click((615, 1050))  # 파이참 누르기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 continue
 
-
-
-            screen = ImageGrab.grab() #스크린샷 찍기
-            rgb = screen.getpixel((926, 490)) # 색 추출하여 중복로그인상태인지 확인하기
+            screen = ImageGrab.grab()  # 스크린샷 찍기
+            rgb = screen.getpixel((1050, 510))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (231, 231, 231):
-                pag.click((926, 604)) # 여기서 로그인하기 클릭하기
+                pag.click((926, 620))  # 여기서 로그인하기 클릭하기
                 await asyncio.sleep(10)
 
-            elif pag.locateOnScreen('교직원 조회.PNG') == None:
+            elif pag.locateOnScreen('교직원 조회.PNG') is None:
                 embed = discord.Embed(title="자가진단과정에서 오류가 발생했습니다",
                                       description=f"잠시후에 자가진단을 다시 실시해주세요",
-                timestamp = datetime.datetime.now(pytz.timezone('UTC')),
-                            colour = 0x754D34)
+                                      timestamp=datetime.datetime.now(pytz.timezone('UTC')),
+                                      colour=0x754D34)
                 embed.set_author(name=f"{data[2].name} 님의 자가진단 오류", icon_url=data[2].avatar_url)
                 embed.set_footer(text=dev)
                 await data[2].send(embed=embed)
@@ -175,15 +192,21 @@ async def self_diagnosis_task():
                 await asyncio.sleep(1)
                 pag.click((115, 16))
                 pag.hotkey('ctrl', 'w')
-                pag.click((615, 1050))  # 파이참 누르기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 continue
 
             pag.click((92, 370))  # 자가진단 메뉴 누르기
             await asyncio.sleep(1)
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (255, 129, 28):
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 embed = discord.Embed(title="자가진단 실행중에 사용자가 로그하였습니다",
                                       description=f"잠시후에 자가진단을 다시 실시해주세요",
                                       timestamp=datetime.datetime.now(pytz.timezone('UTC')),
@@ -198,11 +221,13 @@ async def self_diagnosis_task():
             pag.click((310, 453))  # 진단하기 버튼 누르기
             await asyncio.sleep(1)
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (255, 129, 28):
-                pag.click((960, 610))  # 여기서 로그인하기 클릭하기
-                pag.click((615, 1050))  # 파이참 누르기
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 embed = discord.Embed(title="자가진단 실행중에 사용자가 로그하였습니다",
                                       description=f"잠시후에 자가진단을 다시 실시해주세요",
                                       timestamp=datetime.datetime.now(pytz.timezone('UTC')),
@@ -214,25 +239,28 @@ async def self_diagnosis_task():
 
             await asyncio.sleep(5)  # 로딩 기다리기
 
-            pag.click((937, 470))  # 1번 문항 아니오
-            pag.click((937, 560))  # 2번 문항 아니오
-            pag.moveTo((1307, 452))  # 스크롤 위에 마우스커서 이동
-            pag.dragTo(x=1307, y=765, duration=0.5)  # 스크롤
-            pag.click((937, 459))  # 3번 문항 아니오
-            pag.click((937, 550))  # 4번 문항 아니오
-            pag.click((937, 638))  # 5번 문항 아니오
-            pag.click((937, 725))  # 6번 문항 아니오
-            pag.click((957, 784))  # 제출 버튼 누르기
+            pag.click((937, 495))  # 1번 문항 아니오
+            pag.click((937, 575))  # 2번 문항 아니오
+            # pag.moveTo((1307, 452))  # 스크롤 위에 마우스커서 이동
+            # pag.dragTo(x=1271, y=765, duration=0.5)  # 스크롤
+            pag.click((1271, 765))  # 스크롤
+            pag.click((937, 486))  # 3번 문항 아니오
+            pag.click((937, 564))  # 4번 문항 아니오
+            pag.click((937, 644))  # 5번 문항 아니오
+            pag.click((937, 723))  # 6번 문항 아니오
+            pag.click((957, 779))  # 제출 버튼 누르기
             await asyncio.sleep(3)  # 로딩 기다리기
 
-            pag.click((933, 608))  # 예 버튼 누르기
+            pag.click((933, 618))  # 예 버튼 누르기
             await asyncio.sleep(1)
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (255, 129, 28):
-                pag.click((960, 610))  # 여기서 로그인하기 클릭하기
-                pag.click((615, 1050))  # 파이참 누르기
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 embed = discord.Embed(title="자가진단 실행중에 사용자가 로그하였습니다",
                                       description=f"잠시후에 자가진단을 다시 실시해주세요",
                                       timestamp=datetime.datetime.now(pytz.timezone('UTC')),
@@ -244,18 +272,38 @@ async def self_diagnosis_task():
 
             await asyncio.sleep(5)  # 로딩 기다리기
 
-            img = ImageGrab.grab([755, 305, 1155, 585])
-            saveas = "{}{}".format(img_time, '.png')
-            img.save(saveas)
+            img = ImageGrab.grab([768, 343, 1160, 609])
+            img.save(path)
 
-            pag.click((1190, 268))  # X버튼 누르기
+            pag.click((1168, 313))  # X버튼 누르기
             await asyncio.sleep(1)
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (255, 129, 28):
-                pag.click((960, 610))  # 여기서 로그인하기 클릭하기
-                pag.click((615, 1050))  # 파이참 누르기
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
+                embed = discord.Embed(title="자가진단 실행중에 사용자가 로그인하였습니다",
+                                      description=f"잠시후에 자가진단을 다시 실시해주세요",
+                                      timestamp=datetime.datetime.now(pytz.timezone('UTC')),
+                                      colour=0x754D34)
+                embed.set_author(name=f"{data[2].name} 님의 로그인 오류", icon_url=data[2].avatar_url)
+                embed.set_footer(text=dev)
+                await data[2].send(embed=embed)
+                continue
+            pag.click((1868, 125))  # 로그아웃 누르기
+            await asyncio.sleep(1)
+
+            screen = ImageGrab.grab()  # 스크린샷 찍기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
+
+            if rgb == (255, 129, 28):
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 embed = discord.Embed(title="자가진단 실행중에 사용자가 로그하였습니다",
                                       description=f"잠시후에 자가진단을 다시 실시해주세요",
                                       timestamp=datetime.datetime.now(pytz.timezone('UTC')),
@@ -264,25 +312,11 @@ async def self_diagnosis_task():
                 embed.set_footer(text=dev)
                 await data[2].send(embed=embed)
                 continue
-            pag.click((1868, 94))  # 로그아웃 누르기
             await asyncio.sleep(1)
-            screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            pag.click((1136, 225))  # 팝업차단 창 누르기
+            pag.click((815, 1050))  # 파이참 누르기
 
-            if rgb == (255, 129, 28):
-                pag.click((960, 610))  # 여기서 로그인하기 클릭하기
-                pag.click((615, 1050))  # 파이참 누르기
-                embed = discord.Embed(title="자가진단 실행중에 사용자가 로그하였습니다",
-                                      description=f"잠시후에 자가진단을 다시 실시해주세요",
-                                      timestamp=datetime.datetime.now(pytz.timezone('UTC')),
-                                      colour=0x754D34)
-                embed.set_author(name=f"{data[2].name} 님의 로그인 오류", icon_url=data[2].avatar_url)
-                embed.set_footer(text=dev)
-                await data[2].send(embed=embed)
-                continue
-            pag.click((615, 1050))  # 파이참 누르기
-
-            image = discord.File(f"{img_time}.png", filename="image.png")
+            image = discord.File(f"{path}", filename="image.png")
 
             total = (time.time() - start)
             embed = discord.Embed(title="자가진단을 완료하였습니다",
@@ -303,11 +337,20 @@ async def self_diagnosis_task():
 
         elif auto_self_diagnosis_list:
             start = time.time()
-            now = time.localtime()
-            img_time = "%04d-%02d-%02d-%02dh-%02dm-%02ds" % (
-            now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec)
+
+            d = datetime.datetime.now()
+
+            if not os.path.exists(f"./2022/{d.month}"):
+                os.makedirs(f"./2022/{d.month}")
+
+            if not os.path.exists(f"./2022/{d.month}/{d.day}"):
+                os.makedirs(f"./2022/{d.month}/{d.day}")
+
+            if not os.path.exists(f"./2022/{d.month}/{d.day}/auto_self_diagnosis"):
+                os.makedirs(f"./2022/{d.month}/{d.day}/auto_self_diagnosis")
 
             data = auto_self_diagnosis_list.pop(0)
+            path = f"./2022/{d.month}/{d.day}/auto_self_diagnosis/{data[2].name}.png"
 
             pag.click((460, 1050))  # 크롬 누르기
             pag.click((957, 394))  # 개신누리 아이디 누르기
@@ -318,7 +361,6 @@ async def self_diagnosis_task():
             await asyncio.sleep(5)
 
             if pag.locateOnScreen('로그인 오류.PNG'):
-
                 type = "login_error"
                 notify_at_8am.append((type, data[2]))
 
@@ -342,20 +384,22 @@ async def self_diagnosis_task():
                     pass
                 pag.click(pag.center(pag.locateOnScreen('okay.PNG')))
                 pag.hotkey('F5')
-                pag.click((615, 1050))  # 파이참 누르기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 continue
 
-
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((926, 490))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((1050, 510))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (231, 231, 231):
-                pag.click((926, 604))  # 여기서 로그인하기 클릭하기
+                pag.click((926, 620))  # 여기서 로그인하기 클릭하기
                 await asyncio.sleep(10)
 
-            elif pag.locateOnScreen('교직원 조회.PNG') == None:
+            elif pag.locateOnScreen('교직원 조회.PNG') is None:
                 type = "error"
                 notify_at_8am.append((type, data[2]))
+
                 pag.hotkey('ctrl', 't')
                 await asyncio.sleep(1)
                 pag.typewrite('https://eis.cbnu.ac.kr/')
@@ -363,17 +407,21 @@ async def self_diagnosis_task():
                 await asyncio.sleep(1)
                 pag.click((115, 16))
                 pag.hotkey('ctrl', 'w')
-                pag.click((615, 1050))  # 파이참 누르기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 continue
 
             pag.click((92, 370))  # 자가진단 메뉴 누르기
             await asyncio.sleep(1)
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (255, 129, 28):
-                pag.click((960, 610))  # 여기서 로그인하기 클릭하기
-                pag.click((615, 1050))  # 파이참 누르기
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 type = "session_expired"
                 notify_at_8am.append((type, data[2]))
                 continue
@@ -383,71 +431,82 @@ async def self_diagnosis_task():
             pag.click((310, 453))  # 진단하기 버튼 누르기
             await asyncio.sleep(1)
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (255, 129, 28):
-                pag.click((960, 610))  # 여기서 로그인하기 클릭하기
-                pag.click((615, 1050))  # 파이참 누르기
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 type = "session_expired"
                 notify_at_8am.append((type, data[2]))
                 continue
 
             await asyncio.sleep(5)  # 로딩 기다리기
 
-            pag.click((937, 470))  # 1번 문항 아니오
-            pag.click((937, 560))  # 2번 문항 아니오
-            pag.moveTo((1307, 452))  # 스크롤 위에 마우스커서 이동
-            pag.dragTo(x=1307, y=765, duration=0.5)  # 스크롤
-            pag.click((937, 459))  # 3번 문항 아니오
-            pag.click((937, 550))  # 4번 문항 아니오
-            pag.click((937, 638))  # 5번 문항 아니오
-            pag.click((937, 725))  # 6번 문항 아니오
-            pag.click((957, 784))  # 제출 버튼 누르기
+            pag.click((937, 495))  # 1번 문항 아니오
+            pag.click((937, 575))  # 2번 문항 아니오
+            # pag.moveTo((1307, 452))  # 스크롤 위에 마우스커서 이동
+            # pag.dragTo(x=1271, y=765, duration=0.5)  # 스크롤
+            pag.click((1271, 765))  # 스크롤
+            pag.click((937, 486))  # 3번 문항 아니오
+            pag.click((937, 564))  # 4번 문항 아니오
+            pag.click((937, 644))  # 5번 문항 아니오
+            pag.click((937, 723))  # 6번 문항 아니오
+            pag.click((957, 779))  # 제출 버튼 누르기
             await asyncio.sleep(3)  # 로딩 기다리기
 
-            pag.click((933, 608))  # 예 버튼 누르기
+            pag.click((933, 618))  # 예 버튼 누르기
             await asyncio.sleep(1)
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (255, 129, 28):
-                pag.click((960, 610))  # 여기서 로그인하기 클릭하기
-                pag.click((615, 1050))  # 파이참 누르기
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 type = "session_expired"
                 notify_at_8am.append((type, data[2]))
                 continue
 
             await asyncio.sleep(5)  # 로딩 기다리기
 
-            img = ImageGrab.grab([755, 305, 1155, 585])
-            saveas = "{}{}".format(img_time, '.png')
-            img.save(saveas)
+            img = ImageGrab.grab([768, 343, 1160, 609])
+            img.save(path)
 
-            pag.click((1190, 268))  # X버튼 누르기
+            pag.click((1168, 313))  # X버튼 누르기
             await asyncio.sleep(1)
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (255, 129, 28):
-                pag.click((960, 610))  # 여기서 로그인하기 클릭하기
-                pag.click((615, 1050))  # 파이참 누르기
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 type = "session_expired"
                 notify_at_8am.append((type, data[2]))
                 continue
-            pag.click((1868, 94))  # 로그아웃 누르기
+            pag.click((1868, 125))  # 로그아웃 누르기
             await asyncio.sleep(1)
+
             screen = ImageGrab.grab()  # 스크린샷 찍기
-            rgb = screen.getpixel((869, 541))  # 색 추출하여 중복로그인상태인지 확인하기
+            rgb = screen.getpixel((876, 552))  # 색 추출하여 중복로그인상태인지 확인하기
 
             if rgb == (255, 129, 28):
-                pag.click((960, 610))  # 여기서 로그인하기 클릭하기
-                pag.click((615, 1050))  # 파이참 누르기
+                pag.click((960, 620))  # 여기서 로그인하기 클릭하기
+                await asyncio.sleep(1)
+                pag.click((1136, 225))  # 팝업차단 창 누르기
+                pag.click((815, 1050))  # 파이참 누르기
                 type = "session_expired"
                 notify_at_8am.append((type, data[2]))
                 continue
-            pag.click((615, 1050))  # 파이참 누르기
+            await asyncio.sleep(1)
+            pag.click((1136, 225))  # 팝업차단 창 누르기
+            pag.click((815, 1050))  # 파이참 누르기
 
-            image = discord.File(f"{img_time}.png", filename="image.png")
+            image = discord.File(f"{path}", filename="image.png")
 
             total = (time.time() - start)
             type = "success"
@@ -471,7 +530,7 @@ async def auto_self_diagnosis():
             done = False
 
         if (not done) and (not auto_self_diagnosis_list) and datetime.datetime.now().hour == 6:
-            f = open("자동자가진단.txt", 'r')-+
+            f = open("자동자가진단.txt", 'r')
 
             lines = f.read().splitlines()
 
@@ -487,7 +546,7 @@ async def auto_self_diagnosis():
                         break
 
                 try:
-                    if client.get_user(int(line)): 
+                    if client.get_user(int(line)):
                         auto_self_diagnosis_list.append((id, psw, client.get_user(int(line))))
                     else:
                         pass
@@ -847,6 +906,7 @@ async def on_message(message):
 
     if message.content == '코딩냥이 롤 닉네임':
         await message.reply('충북대 샌애긔')
+
 
 client.loop.create_task(my_background_task())
 client.loop.create_task(self_diagnosis_task())
