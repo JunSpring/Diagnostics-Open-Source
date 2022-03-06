@@ -531,22 +531,23 @@ async def auto_self_diagnosis():
 
         if (not done) and (not auto_self_diagnosis_list) and datetime.datetime.now().hour == 6:
             f = open("자동자가진단.txt", 'r')
-
             lines = f.read().splitlines()
 
             for line in lines:
                 file = openpyxl.load_workbook('자가진단.xlsx')
                 sheet = file.active
                 work = f'{line}'
+                state = False
 
                 for i in range(1, 1000):
                     if str(sheet['A' + str(i)].value) == str(work):
                         id = str(sheet['B' + str(i)].value)
                         psw = str(sheet['C' + str(i)].value)
+                        state = True
                         break
 
                 try:
-                    if client.get_user(int(line)):
+                    if state and client.get_user(int(line)):
                         auto_self_diagnosis_list.append((id, psw, client.get_user(int(line))))
                     else:
                         pass
@@ -555,7 +556,7 @@ async def auto_self_diagnosis():
                     type = "cantfound"
                     notify_at_8am.append((type, client.get_user(int(line))))
 
-                done = True
+            done = True
 
             await asyncio.sleep(1)
 
